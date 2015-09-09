@@ -82,7 +82,6 @@
         <Grid>
             <!--Menu strip-->
             <Menu Grid.Row="0" Margin="5" VerticalAlignment="Stretch" HorizontalAlignment="Left">
-
                 <MenuItem Header="New Card Import"></MenuItem>
                 <MenuItem Header="Generate pHashes"></MenuItem>
             </Menu>
