@@ -13,9 +13,9 @@ namespace MTG_Scanner.VMs
 {
     public class MainWindowViewModel
     {
-        [DllImport(@"pHash.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ph_dct_imagehash(string file, ref ulong hash);
-        [DllImport(@"pHash.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ph_hamming_distance(ulong hasha, ulong hashb);
 
         private readonly IUtil _until;
