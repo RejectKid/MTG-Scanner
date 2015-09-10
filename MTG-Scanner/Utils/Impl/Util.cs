@@ -1,23 +1,27 @@
 ﻿using MTG_Scanner.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MTG_Scanner.Utils.Impl
 {
     public class Util : IUtil
+
     {
         private readonly IMagicCardFactory _magicCardFactory;
+        private readonly Regex _matchUntilDot = new Regex(@"^([^.]*)");
 
         public Util(IMagicCardFactory magicCardFactory)
         {
             _magicCardFactory = magicCardFactory;
         }
 
-        public void TraverseTree(string root, List<MagicCard> listOfMagicCards)
+        public async void TraverseTree(string root, List<MagicCard> listOfMagicCards)
         {
             var dirs = new Stack<string>(100);
 
-            if (!System.IO.Directory.Exists(root))
+            if (!Directory.Exists(root))
             {
                 throw new ArgumentException();
             }
@@ -29,14 +33,14 @@ namespace MTG_Scanner.Utils.Impl
                 string[] subDirs;
                 try
                 {
-                    subDirs = System.IO.Directory.GetDirectories(currentDir);
+                    subDirs = Directory.GetDirectories(currentDir);
                 }
                 catch (UnauthorizedAccessException e)
                 {
                     Console.WriteLine(e.Message);
                     continue;
                 }
-                catch (System.IO.DirectoryNotFoundException e)
+                catch (DirectoryNotFoundException e)
                 {
                     Console.WriteLine(e.Message);
                     continue;
@@ -45,7 +49,7 @@ namespace MTG_Scanner.Utils.Impl
                 string[] files;
                 try
                 {
-                    files = System.IO.Directory.GetFiles(currentDir);
+                    files = Directory.GetFiles(currentDir);
                 }
 
                 catch (UnauthorizedAccessException e)
@@ -55,7 +59,7 @@ namespace MTG_Scanner.Utils.Impl
                     continue;
                 }
 
-                catch (System.IO.DirectoryNotFoundException e)
+                catch (DirectoryNotFoundException e)
                 {
                     Console.WriteLine(e.Message);
                     continue;
@@ -64,17 +68,10 @@ namespace MTG_Scanner.Utils.Impl
                 {
                     try
                     {
-                        // Perform whatever action is required in your scenario.
-                        var fi = new System.IO.FileInfo(file);
-                        var tmpCard = _magicCardFactory.CreateMagicCard(fi.FullName);
-                        if (fi.Directory != null)
-                        {
-                            var dirName = fi.Directory.FullName.Split('\\');
-                            tmpCard.SetNameShort = dirName[dirName.Length - 1];
-                        }
+                        var tmpCard = CreateBaseCard(file);
                         listOfMagicCards.Add(tmpCard);
                     }
-                    catch (System.IO.FileNotFoundException e)
+                    catch (FileNotFoundException e)
                     {
                         Console.WriteLine(e.Message);
                     }
@@ -85,6 +82,20 @@ namespace MTG_Scanner.Utils.Impl
                 foreach (var str in subDirs)
                     dirs.Push(str);
             }
+        }
+
+        private MagicCard CreateBaseCard(string file)
+        {
+            var fi = new FileInfo(file);
+            var tmpCard = _magicCardFactory.CreateMagicCard(fi.FullName);
+            if (fi.Directory == null)
+                return tmpCard;
+
+            var dirName = fi.FullName.Split('\\');
+            tmpCard.SetNameShort = dirName[dirName.Length - 2];
+            var test = _matchUntilDot.Match(dirName[dirName.Length - 1]);
+            tmpCard.CardName = test.Value;
+            return tmpCard;
         }
     }
 

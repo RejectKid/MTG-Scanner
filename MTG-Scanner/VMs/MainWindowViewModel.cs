@@ -4,10 +4,12 @@ using MTG_Scanner.Theme;
 using MTG_Scanner.Utils;
 using MTG_Scanner.Utils.Impl;
 using Ninject;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
+using System.Xml;
 
 namespace MTG_Scanner.VMs
 {
@@ -22,6 +24,7 @@ namespace MTG_Scanner.VMs
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
         public List<MagicCard> ListOfMagicCards { get; set; } = new List<MagicCard>();
+        private const string XmlDbPath = @"H:\Compy Sci\MTG-Scanner\MTG-Scanner\Resources\Card Db\StandardDB.xml";
 
         public MainWindowViewModel()
         {
@@ -53,14 +56,67 @@ namespace MTG_Scanner.VMs
 
         public void ComputePHashes(string selectedPath)
         {
+            //read images in resources
             _until.TraverseTree(selectedPath, ListOfMagicCards);
             ulong hash1 = 0;
-            foreach (var magicCard in ListOfMagicCards)
+            //compute hashes
+            //foreach (var magicCard in ListOfMagicCards)
+            //{
+            ph_dct_imagehash(@"H:\Compy Sci\MTG-Scanner\MTG-Scanner\Resources\Card Images\BNG\Acolyte's Reward.full.jpg", ref hash1);
+            //}
+            //add to XML
+            AddHashDataToXML();
+        }
+
+        private void AddHashDataToXML()
+        {
+            using (var reader = new XmlTextReader(XmlDbPath))
             {
-
-                ph_dct_imagehash(magicCard.PathOfCardImage, ref hash1);
+                while (reader.Read())
+                {
+                    switch (reader.NodeType)
+                    {
+                        case XmlNodeType.None:
+                            break;
+                        case XmlNodeType.Element:
+                            break;
+                        case XmlNodeType.Attribute:
+                            break;
+                        case XmlNodeType.Text:
+                            break;
+                        case XmlNodeType.CDATA:
+                            break;
+                        case XmlNodeType.EntityReference:
+                            break;
+                        case XmlNodeType.Entity:
+                            break;
+                        case XmlNodeType.ProcessingInstruction:
+                            break;
+                        case XmlNodeType.Comment:
+                            break;
+                        case XmlNodeType.Document:
+                            break;
+                        case XmlNodeType.DocumentType:
+                            break;
+                        case XmlNodeType.DocumentFragment:
+                            break;
+                        case XmlNodeType.Notation:
+                            break;
+                        case XmlNodeType.Whitespace:
+                            break;
+                        case XmlNodeType.SignificantWhitespace:
+                            break;
+                        case XmlNodeType.EndElement:
+                            break;
+                        case XmlNodeType.EndEntity:
+                            break;
+                        case XmlNodeType.XmlDeclaration:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
             }
-
         }
     }
 }
