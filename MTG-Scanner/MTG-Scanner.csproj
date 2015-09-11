@@ -107,6 +107,7 @@
     <Compile Include="Models\IMagicCardFactory.cs" />
     <Compile Include="Models\MagicCard.cs" />
     <Compile Include="Models\SimpleCommand.cs" />
+    <Compile Include="Models\XMLFileLoader.cs" />
     <Compile Include="Theme\AccentColorMenuData.cs" />
     <Compile Include="Theme\AppThemeMenuData.cs" />
     <Compile Include="Utils\Impl\BindHouse.cs" />

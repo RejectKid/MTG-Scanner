@@ -6,6 +6,7 @@ using MTG_Scanner.Utils.Impl;
 using Ninject;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
@@ -21,6 +22,7 @@ namespace MTG_Scanner.VMs
         public static extern int ph_hamming_distance(ulong hasha, ulong hashb);
 
         private readonly IUtil _until;
+        private XmlFileLoader _xmlFileLoader;
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
         public List<MagicCard> ListOfMagicCards { get; set; } = new List<MagicCard>();
@@ -30,6 +32,7 @@ namespace MTG_Scanner.VMs
         {
             GenerateThemeData();
             _until = KernelUtil.Kernel.Get<IUtil>();
+            _xmlFileLoader = new XmlFileLoader();
         }
 
         private void GenerateThemeData()
@@ -52,6 +55,7 @@ namespace MTG_Scanner.VMs
                                                ColorBrush = a.Resources["WhiteColorBrush"] as Brush
                                            })
                                            .ToList();
+
         }
 
         public void ComputePHashes(string selectedPath)
@@ -79,6 +83,8 @@ namespace MTG_Scanner.VMs
                         case XmlNodeType.None:
                             break;
                         case XmlNodeType.Element:
+                            if (reader.Name == "card")
+                                Debug.WriteLine("thing");
                             break;
                         case XmlNodeType.Attribute:
                             break;
