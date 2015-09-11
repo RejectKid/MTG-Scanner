@@ -11,18 +11,18 @@
         public string Rarity { get; set; }
         public string Manacost { get; set; }
         public int ConvertedManaCost { get; set; }
-        public int Power { get; set; }
-        public int Toughness { get; set; }
+        public string Power { get; set; }
+        public string Toughness { get; set; }
         public int Loyalty { get; set; }
         public string Ability { get; set; }
         public string Flavor { get; set; }
         public int Variation { get; set; }
         public string Artist { get; set; }
-        public int Number { get; set; }
-        public int Rating { get; set; }
+        public string Number { get; set; }
+        public double Rating { get; set; }
         public string Ruling { get; set; }
         public string Color { get; set; }
-        public int GeneratedMana { get; set; }
+        public string GeneratedMana { get; set; }
         public int BackId { get; set; }
         public string WaterMark { get; set; }
         public string PrintNumber { get; set; }

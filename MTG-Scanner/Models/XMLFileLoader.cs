@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -14,12 +16,14 @@ namespace MTG_Scanner.Models
 
         public XmlFileLoader()
         {
+            var watch = new Stopwatch();
+            watch.Start();
             using (var reader = XmlReader.Create(XmlDbPath))
             {
                 ListOfxmlDatabase.Add(XDocument.Load(reader));
             }
             GetCards();
-
+            Debug.WriteLine("XmlFileLoader(): " + watch.ElapsedMilliseconds + "ms");
         }
 
         public List<XElement> GetCards()
@@ -29,34 +33,39 @@ namespace MTG_Scanner.Models
             foreach (var query in ListOfxmlDatabase.Select(doc => doc.Descendants("card").ToList()))
             // ReSharper restore LoopCanBePartlyConvertedToQuery
             {
-                foreach (var tmpCard in query.Select(card => new MagicCard
+
+                foreach (var card in query)
                 {
-                    Id = Convert.ToInt32(card.Element("id")?.Value),
-                    CardName = card.Element("name")?.Value,
-                    SetNameShort = card.Element("set")?.Value,
-                    Type = card.Element("type")?.Value,
-                    Rarity = card.Element("rarity")?.Value,
-                    Manacost = card.Element("manacost")?.Value,
-                    ConvertedManaCost = Convert.ToInt32(GetNullableElementValue(card, "converted_manacost")),
-                    Power = Convert.ToInt32(GetNullableElementValue(card, "power")),
-                    Toughness = Convert.ToInt32(GetNullableElementValue(card, "toughness")),
-                    Loyalty = Convert.ToInt32(GetNullableElementValue(card, "loyalty")),
-                    Ability = card.Element("ability")?.Value,
-                    Flavor = card.Element("flavor")?.Value,
-                    Variation = Convert.ToInt32(GetNullableElementValue(card, "variation")),
-                    Artist = card.Element("artist")?.Value,
-                    Number = Convert.ToInt32(GetNullableElementValue(card, "number")),
-                    Rating = Convert.ToInt32(GetNullableElementValue(card, "rating")),
-                    Ruling = card.Element("ruling")?.Value,
-                    Color = card.Element("color")?.Value,
-                    GeneratedMana = Convert.ToInt32(GetNullableElementValue(card, "generated_mana")),
-                    BackId = Convert.ToInt32(GetNullableElementValue(card, "back_id")),
-                    WaterMark = card.Element("watermark")?.Value,
-                    PrintNumber = card.Element("print_number")?.Value,
-                    IsOriginal = Convert.ToBoolean(GetNullableElementValue(card, "is_original"))
-                }))
-                {
-                    ListOfAllMagicCards.Add(tmpCard);
+                    Task.Run(() =>
+                    {
+                        var tmpCard = new MagicCard
+                        {
+                            Id = Convert.ToInt32(card.Element("id")?.Value),
+                            CardName = card.Element("name")?.Value,
+                            SetNameShort = card.Element("set")?.Value,
+                            Type = card.Element("type")?.Value,
+                            Rarity = card.Element("rarity")?.Value,
+                            Manacost = card.Element("manacost")?.Value,
+                            ConvertedManaCost = Convert.ToInt32(GetNullableElementValue(card, "converted_manacost")),
+                            Power = card.Element("power")?.Value,
+                            Toughness = card.Element("toughness")?.Value,
+                            Loyalty = Convert.ToInt32(GetNullableElementValue(card, "loyalty")),
+                            Ability = card.Element("ability")?.Value,
+                            Flavor = card.Element("flavor")?.Value,
+                            Variation = Convert.ToInt32(GetNullableElementValue(card, "variation")),
+                            Artist = card.Element("artist")?.Value,
+                            Number = card.Element("number")?.Value,
+                            Rating = Convert.ToDouble(GetNullableElementValue(card, "rating")),
+                            Ruling = card.Element("ruling")?.Value,
+                            Color = card.Element("color")?.Value,
+                            GeneratedMana = card.Element("generated_mana")?.Value,
+                            BackId = Convert.ToInt32(GetNullableElementValue(card, "back_id")),
+                            WaterMark = card.Element("watermark")?.Value,
+                            PrintNumber = card.Element("print_number")?.Value,
+                            IsOriginal = Convert.ToBoolean(GetNullableElementValue(card, "is_original"))
+                        };
+                        ListOfAllMagicCards.Add(tmpCard);
+                    });
                 }
             }
             return tmpListOfCards;
@@ -64,7 +73,8 @@ namespace MTG_Scanner.Models
 
         private static string GetNullableElementValue(XContainer card, string elementName)
         {
-            return card.Element(elementName)?.Value == "" ? null : card.Element(elementName)?.Value;
+            var tmpVal = card.Element(elementName)?.Value;
+            return tmpVal == "" ? null : tmpVal;
         }
     }
 }
