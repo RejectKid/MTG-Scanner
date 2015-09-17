@@ -3,8 +3,8 @@
     public class MagicCard
     {
         public string PathOfCardImage { get; set; }
-        public string SetNameShort { get; set; }
-        public string CardName { get; set; }
+        public string Set { get; set; }
+        public string Name { get; set; }
         public ulong PHash { get; set; }
         public int Id { get; set; }
         public string Type { get; set; }

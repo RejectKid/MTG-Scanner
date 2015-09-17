@@ -1,23 +1,24 @@
-﻿using MTG_Scanner.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using MTG_Scanner.Models;
 
 namespace MTG_Scanner.Utils.Impl
 {
     public class Util : IUtil
-
     {
-        private readonly IMagicCardFactory _magicCardFactory;
+        //private readonly IMagicCardFactory _magicCardFactory;
         private readonly Regex _matchUntilDot = new Regex(@"^([^.]*)");
 
-        public Util(IMagicCardFactory magicCardFactory)
+        public Util()
+        //public Util( IMagicCardFactory magicCardFactory )
         {
-            _magicCardFactory = magicCardFactory;
+            //_magicCardFactory = magicCardFactory;
         }
 
-        public async void TraverseTree(string root, List<MagicCard> listOfMagicCards)
+        public void TraverseTree(string root, List<MagicCard> listOfMagicCards)
         {
             var dirs = new Stack<string>(100);
 
@@ -87,15 +88,23 @@ namespace MTG_Scanner.Utils.Impl
         private MagicCard CreateBaseCard(string file)
         {
             var fi = new FileInfo(file);
-            var tmpCard = _magicCardFactory.CreateMagicCard(fi.FullName);
+            //var tmpCard = _magicCardFactory.CreateMagicCard( fi.FullName );
+            var tmpCard = new MagicCard();
             if (fi.Directory == null)
                 return tmpCard;
 
             var dirName = fi.FullName.Split('\\');
-            tmpCard.SetNameShort = dirName[dirName.Length - 2];
-            var test = _matchUntilDot.Match(dirName[dirName.Length - 1]);
-            tmpCard.CardName = test.Value;
+            tmpCard.Set = dirName[dirName.Length - 2];
+            var tmpCardName = _matchUntilDot.Match(dirName[dirName.Length - 1]);
+            tmpCard.Name = tmpCardName.Value;
+            tmpCard.PathOfCardImage = fi.FullName;
             return tmpCard;
+        }
+
+        public string GetVariableName<T>(Expression<Func<T>> expression)
+        {
+            var body = ((MemberExpression)expression.Body);
+            return body.Member.Name;
         }
     }
 

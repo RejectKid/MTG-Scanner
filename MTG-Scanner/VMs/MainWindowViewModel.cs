@@ -1,16 +1,20 @@
 ﻿using MahApps.Metro;
+using MahApps.Metro.Controls.Dialogs;
 using MTG_Scanner.Models;
 using MTG_Scanner.Theme;
 using MTG_Scanner.Utils;
 using MTG_Scanner.Utils.Impl;
 using Ninject;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Media;
-using System.Xml;
+using System.Windows.Media.Imaging;
+using Brush = System.Windows.Media.Brush;
 
 namespace MTG_Scanner.VMs
 {
@@ -21,8 +25,9 @@ namespace MTG_Scanner.VMs
         [DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ph_hamming_distance(ulong hasha, ulong hashb);
 
-        private readonly IUtil _until;
+        private readonly IUtil _util;
         private XmlFileLoader _xmlFileLoader;
+        private readonly IXmlFileCreator _xmlFileCreator;
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
         public List<MagicCard> ListOfMagicCards { get; set; } = new List<MagicCard>();
@@ -31,7 +36,8 @@ namespace MTG_Scanner.VMs
         public MainWindowViewModel()
         {
             GenerateThemeData();
-            _until = KernelUtil.Kernel.Get<IUtil>();
+            _util = KernelUtil.Kernel.Get<IUtil>();
+            _xmlFileCreator = KernelUtil.Kernel.Get<IXmlFileCreator>();
             _xmlFileLoader = new XmlFileLoader();
         }
 
@@ -58,70 +64,47 @@ namespace MTG_Scanner.VMs
 
         }
 
-        public void ComputePHashes(string selectedPath)
+        public string ComputePHashes(string selectedPath, ProgressDialogController dialogController)
         {
+            ListOfMagicCards.Clear();
             //read images in resources
-            _until.TraverseTree(selectedPath, ListOfMagicCards);
-            ulong hash1 = 0;
+            _util.TraverseTree(selectedPath, ListOfMagicCards);
             //compute hashes
-            //foreach (var magicCard in ListOfMagicCards)
-            //{
-            ph_dct_imagehash(@"H:\Compy Sci\MTG-Scanner\MTG-Scanner\Resources\Card Images\BNG\Acolyte's Reward.full.jpg", ref hash1);
-            //}
-            //add to XML
-            AddHashDataToXML();
+            var curCard = 0;
+            var totalCards = ListOfMagicCards.Count();
+            var hashingLoop = Parallel.ForEach(ListOfMagicCards, card =>
+            {
+                ulong hash = 0;
+                ph_dct_imagehash(card.PathOfCardImage, ref hash);
+                card.PHash = hash;
+                curCard++;
+                dialogController.SetProgress((double)curCard / totalCards);
+                dialogController.SetMessage("pHashing real hard! Finished: " + curCard + "/" + totalCards);
+            });
+
+            //Create Basic XML DB of pHashes
+            var path = _xmlFileCreator.CreateXmlDb(ListOfMagicCards);
+            return path;
         }
 
-        private void AddHashDataToXML()
+        /// <summary>
+        /// Converts a Bitmap image to an image source and freezes the img
+        /// </summary>
+        /// <param name="cameraBitmap"></param>
+        /// <returns></returns>
+        public ImageSource ConvertBitMap(Image cameraBitmap)
         {
-            using (var reader = new XmlTextReader(XmlDbPath))
+            using (var memStream = new MemoryStream())
             {
-                while (reader.Read())
-                {
-                    switch (reader.NodeType)
-                    {
-                        case XmlNodeType.None:
-                            break;
-                        case XmlNodeType.Element:
-                            if (reader.Name == "card")
-                                Debug.WriteLine("thing");
-                            break;
-                        case XmlNodeType.Attribute:
-                            break;
-                        case XmlNodeType.Text:
-                            break;
-                        case XmlNodeType.CDATA:
-                            break;
-                        case XmlNodeType.EntityReference:
-                            break;
-                        case XmlNodeType.Entity:
-                            break;
-                        case XmlNodeType.ProcessingInstruction:
-                            break;
-                        case XmlNodeType.Comment:
-                            break;
-                        case XmlNodeType.Document:
-                            break;
-                        case XmlNodeType.DocumentType:
-                            break;
-                        case XmlNodeType.DocumentFragment:
-                            break;
-                        case XmlNodeType.Notation:
-                            break;
-                        case XmlNodeType.Whitespace:
-                            break;
-                        case XmlNodeType.SignificantWhitespace:
-                            break;
-                        case XmlNodeType.EndElement:
-                            break;
-                        case XmlNodeType.EndEntity:
-                            break;
-                        case XmlNodeType.XmlDeclaration:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
+                cameraBitmap.Save(memStream, ImageFormat.Bmp);
+                memStream.Position = 0;
+                var bmpImage = new BitmapImage();
+                bmpImage.BeginInit();
+                bmpImage.StreamSource = memStream;
+                bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+                bmpImage.EndInit();
+                bmpImage.Freeze();
+                return bmpImage;
             }
         }
     }

@@ -81,11 +81,24 @@
     <controls:MetroContentControl>
         <Grid>
             <!--Menu strip-->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <Menu Grid.Row="0" Margin="5" VerticalAlignment="Stretch" HorizontalAlignment="Left">
                 <MenuItem Header="New Card Import"></MenuItem>
-                <MenuItem Name="computePHashes" Header="Generate pHashes" Click="ComputePHashes_OnClick"></MenuItem>
+                <MenuItem Name="_computePHashes" Header="Generate pHashes" Click="ComputePHashes_OnClick"></MenuItem>
             </Menu>
+            <!--cupcake do stuff here with webcam-->
+            <Image Name="_camImage" Grid.Row="1" Grid.Column ="0" Width="400" Height="400"></Image>
+
+
+
         </Grid>
     </controls:MetroContentControl>
-    
+
 </controls:MetroWindow>

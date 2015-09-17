@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace MTG_Scanner.Models
@@ -11,19 +9,22 @@ namespace MTG_Scanner.Models
     class XmlFileLoader
     {
         public readonly List<XDocument> ListOfxmlDatabase = new List<XDocument>();
-        public List<MagicCard> ListOfAllMagicCards { get; set; } = new List<MagicCard>();
-        private const string XmlDbPath = @"H:\Compy Sci\MTG-Scanner\MTG-Scanner\Resources\Card Db\StandardDB.xml";
+        //public List<MagicCard> ListOfAllMagicCards { get; set; } = new List<MagicCard>();
+        public List<MagicCard> ListOfAllMagicCards { get; set; }
+
+        private const string _xmlDbPath = @"..\..\Resources\Card Db\StandardDB.xml";
 
         public XmlFileLoader()
         {
-            var watch = new Stopwatch();
-            watch.Start();
-            using (var reader = XmlReader.Create(XmlDbPath))
-            {
-                ListOfxmlDatabase.Add(XDocument.Load(reader));
-            }
-            GetCards();
-            Debug.WriteLine("XmlFileLoader(): " + watch.ElapsedMilliseconds + "ms");
+            //ListOfAllMagicCards = new List<MagicCard>();
+            //var watch = new Stopwatch();
+            //watch.Start();
+            //using ( var reader = XmlReader.Create( _xmlDbPath ) )
+            //{
+            //  ListOfxmlDatabase.Add( XDocument.Load( reader ) );
+            //}
+            //GetCards();
+            //Debug.WriteLine( "XmlFileLoader(): " + watch.ElapsedMilliseconds + "ms" );
         }
 
         public List<XElement> GetCards()
@@ -41,8 +42,8 @@ namespace MTG_Scanner.Models
                         var tmpCard = new MagicCard
                         {
                             Id = Convert.ToInt32(card.Element("id")?.Value),
-                            CardName = card.Element("name")?.Value,
-                            SetNameShort = card.Element("set")?.Value,
+                            Name = card.Element("name")?.Value,
+                            Set = card.Element("set")?.Value,
                             Type = card.Element("type")?.Value,
                             Rarity = card.Element("rarity")?.Value,
                             Manacost = card.Element("manacost")?.Value,

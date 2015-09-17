@@ -1,6 +1,5 @@
 ﻿
 using MTG_Scanner.Models;
-using Ninject.Extensions.Factory;
 using Ninject.Modules;
 
 namespace MTG_Scanner.Utils.Impl
@@ -9,8 +8,9 @@ namespace MTG_Scanner.Utils.Impl
     {
         public override void Load()
         {
-            Bind<IMagicCardFactory>().ToFactory();
+            //Bind<IMagicCardFactory>().ToFactory();
             Bind<IUtil>().To<Util>().InSingletonScope();
+            Bind<IXmlFileCreator>().To<XmlFileCreator>();
         }
     }
 }
