@@ -24,8 +24,7 @@ namespace MTG_Scanner
         static readonly object Locker = new object();
         private List<MagicCard> _previousMagicCards;
         private readonly List<MagicCard> _currentListOfMagicCards = new List<MagicCard>();
-        private Bitmap _cameraBitmap;
-        private Bitmap _cameraBitmapLive;
+        //private Bitmap _cameraBitmapLive;
         private readonly PictureBox _cam = new PictureBox();
 
         public MainWindow()
@@ -41,7 +40,6 @@ namespace MTG_Scanner
 
         private void LoadCamera()
         {
-            _cameraBitmap = new Bitmap(640, 480);
             _capturer = new Capture(_cameraFilters.VideoInputDevices[0], _cameraFilters.AudioInputDevices[0]);
             var vc = _capturer.VideoCaps;
             _capturer.FrameSize = new System.Drawing.Size(640, 480);
@@ -56,15 +54,23 @@ namespace MTG_Scanner
             {
                 _previousMagicCards = new List<MagicCard>(_currentListOfMagicCards);
                 _currentListOfMagicCards.Clear();
-                _cameraBitmap = e;
-                _cameraBitmapLive = (Bitmap)_cameraBitmap.Clone();
-                //detectQuads( _cameraBitmap );
+                _vm.WebcamController.CameraBitmap = e;
+                //_cameraBitmapLive = (Bitmap)_vm.WebcamController.CameraBitmap.Clone();
+                _vm.WebcamController.DetectQuads();
                 //matchCard();
 
-                //image_output.Image = filteredBitmap;
-                var tmpImge = _vm.ConvertBitMap(_cameraBitmap);
+                var tmpImge = _vm.ConvertBitMap(_vm.WebcamController.FilteredBitmap);
                 tmpImge.Freeze();
-                Dispatcher.BeginInvoke(new ThreadStart(() => _camImage.Source = tmpImge));
+                Dispatcher.BeginInvoke(new ThreadStart(() => _camImageFiltered.Source = tmpImge));
+                var tmpImge2 = _vm.ConvertBitMap(_vm.WebcamController.CameraBitmap);
+                tmpImge2.Freeze();
+                Dispatcher.BeginInvoke(new ThreadStart(() => _camImage.Source = tmpImge2));
+                var tmpImge3 = _vm.ConvertBitMap(_vm.WebcamController.CardArtBitmap);
+                tmpImge3.Freeze();
+                Dispatcher.BeginInvoke(new ThreadStart(() => _camImageCardArt.Source = tmpImge3));
+                var tmpImge4 = _vm.ConvertBitMap(_vm.WebcamController.CardArtBitmap);
+                tmpImge4.Freeze();
+                Dispatcher.BeginInvoke(new ThreadStart(() => _camImageFullCard.Source = tmpImge4));
             }
         }
 

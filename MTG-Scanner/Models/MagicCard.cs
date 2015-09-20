@@ -1,4 +1,8 @@
-﻿namespace MTG_Scanner.Models
+﻿using AForge;
+using System.Collections.Generic;
+using System.Drawing;
+
+namespace MTG_Scanner.Models
 {
     public class MagicCard
     {
@@ -27,6 +31,9 @@
         public string WaterMark { get; set; }
         public string PrintNumber { get; set; }
         public bool IsOriginal { get; set; }
+        public List<IntPoint> Corners { get; set; } = new List<IntPoint>();
+        public Bitmap CardBitmap { get; set; }
+        public Bitmap CardArtBitmap { get; set; }
 
         public MagicCard(string pathOfCardImage)
         {

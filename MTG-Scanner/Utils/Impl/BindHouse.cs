@@ -11,6 +11,7 @@ namespace MTG_Scanner.Utils.Impl
             //Bind<IMagicCardFactory>().ToFactory();
             Bind<IUtil>().To<Util>().InSingletonScope();
             Bind<IXmlFileCreator>().To<XmlFileCreator>();
+            Bind<IWebcamController>().To<WebcamController>();
         }
     }
 }

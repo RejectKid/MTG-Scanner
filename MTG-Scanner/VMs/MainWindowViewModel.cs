@@ -28,6 +28,7 @@ namespace MTG_Scanner.VMs
         private readonly IUtil _util;
         private XmlFileLoader _xmlFileLoader;
         private readonly IXmlFileCreator _xmlFileCreator;
+        public IWebcamController WebcamController { get; set; }
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
         public List<MagicCard> ListOfMagicCards { get; set; } = new List<MagicCard>();
@@ -38,6 +39,7 @@ namespace MTG_Scanner.VMs
             GenerateThemeData();
             _util = KernelUtil.Kernel.Get<IUtil>();
             _xmlFileCreator = KernelUtil.Kernel.Get<IXmlFileCreator>();
+            WebcamController = KernelUtil.Kernel.Get<IWebcamController>();
             _xmlFileLoader = new XmlFileLoader();
         }
 
