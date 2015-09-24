@@ -14,7 +14,7 @@ namespace MTG_Scanner.Models
 
         public Bitmap CardArtBitmap { get; set; } = new Bitmap(400, 400);
 
-        public Bitmap CardBitmap { get; set; } = new Bitmap(400,400);
+        public Bitmap CardBitmap { get; set; } = new Bitmap(400, 400);
 
         public Bitmap FilteredBitmap { get; set; } = new Bitmap(800, 600);
 
@@ -58,7 +58,7 @@ namespace MTG_Scanner.Models
             var g = Graphics.FromImage(bm);
             g.DrawImage(FilteredBitmap, 0, 0);
 
-            var pen = new Pen(Color.Red, 5);
+            var pen = new Pen(Color.Purple, 5);
             var cardPositions = new List<IntPoint>();
 
 
@@ -115,14 +115,16 @@ namespace MTG_Scanner.Models
                         var cartArtFilter = new QuadrilateralTransformation(artCorners, 183, 133);
                         CardArtBitmap = cartArtFilter.Apply(CardBitmap);
 
-                        var card = new MagicCard
+
+
+                        TmpCard = new MagicCard
                         {
                             Corners = corners,
                             CardBitmap = CardBitmap,
                             CardArtBitmap = CardArtBitmap
                         };
 
-                        DetectedMagicCards.Add(card);
+                        //DetectedMagicCards.Add(card);
                     }
                 }
             }
@@ -133,7 +135,7 @@ namespace MTG_Scanner.Models
             FilteredBitmap = bm;
         }
 
-
+        public MagicCard TmpCard { get; set; }
 
 
         private static void RearrangeCorners(IList<IntPoint> corners)

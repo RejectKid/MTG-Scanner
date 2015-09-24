@@ -109,5 +109,19 @@ namespace MTG_Scanner.VMs
                 return bmpImage;
             }
         }
+
+        public void ComparePHash(MagicCard cardBitmap)
+        {
+            //compute Phash for card
+            //var tmpHash = ComputePHash(cardBitmap);
+            //compare on each card
+        }
+
+        //private ulong ComputePHash(MagicCard cardBitmap)
+        //{
+        //    //ulong hash = 0;
+        //    //ph_dct_imagehash(cardBitmap.PathOfCardImage, ref hash);
+        //    //throw new NotImplementedException();
+        //}
     }
 }
