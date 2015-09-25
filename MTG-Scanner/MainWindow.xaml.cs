@@ -70,7 +70,12 @@ namespace MTG_Scanner
                 var tmpImge3 = _vm.ConvertBitMap(_vm.WebcamController.CardBitmap);
                 tmpImge3.Freeze();
                 Dispatcher.BeginInvoke(new ThreadStart(() => _camImageCardArt.Source = tmpImge3));
-                Task.Run(() => _vm.ComparePHash(_vm.WebcamController.TmpCard));
+                Task.Run(() =>
+                {
+                    if (_vm.WebcamController.TmpCard != null)
+                        _vm.ComparePHash(_vm.WebcamController.TmpCard);
+
+                });
 
                 var tmpImge4 = _vm.ConvertBitMap(_vm.WebcamController.CardArtBitmap);
                 tmpImge4.Freeze();

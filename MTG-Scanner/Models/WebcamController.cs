@@ -69,63 +69,70 @@ namespace MTG_Scanner.Models
                 List<IntPoint> corners;
                 var sameCard = false;
 
+                //var what = shapeChecker.IsQuadrilateral(edgePoints, out corners);
+
                 // is triangle or quadrilateral
-                if (shapeChecker.IsConvexPolygon(edgePoints, out corners))
+                if (shapeChecker.IsQuadrilateral(edgePoints, out corners))
                 {
                     // get sub-type
                     var subType = shapeChecker.CheckPolygonSubType(corners);
 
                     // Only return 4 corner rectanges
-                    if ((subType == PolygonSubType.Parallelogram || subType == PolygonSubType.Rectangle) && corners.Count == 4)
+                    if ((subType != PolygonSubType.Parallelogram && subType != PolygonSubType.Rectangle) || corners.Count != 4)
+                        continue;
+
+                    // Check if its sideways, if so rearrange the corners so it's veritcal
+                    RearrangeCorners(corners);
+
+                    // Prevent it from detecting the same card twice
+                    foreach (var point in cardPositions)
                     {
-                        // Check if its sideways, if so rearrange the corners so it's veritcal
-                        RearrangeCorners(corners);
-
-                        // Prevent it from detecting the same card twice
-                        foreach (var point in cardPositions)
-                        {
-                            if (corners[0].DistanceTo(point) < 40)
-                                sameCard = true;
-                        }
-
-                        if (sameCard)
-                            continue;
-
-                        // Hack to prevent it from detecting smaller sections of the card instead of the whole card
-                        if (GetArea(corners) < 20000)
-                            continue;
-
-                        cardPositions.Add(corners[0]);
-
-                        g.DrawPolygon(pen, ToPointsArray(corners));
-
-                        // Extract the card bitmap
-                        var transformFilter = new QuadrilateralTransformation(corners, 211, 298);
-                        CardBitmap = transformFilter.Apply(CameraBitmap);
-
-                        var artCorners = new List<IntPoint>
-                        {
-                            new IntPoint(14, 35),
-                            new IntPoint(193, 35),
-                            new IntPoint(193, 168),
-                            new IntPoint(14, 168)
-                        };
-
-                        // Extract the art bitmap
-                        var cartArtFilter = new QuadrilateralTransformation(artCorners, 183, 133);
-                        CardArtBitmap = cartArtFilter.Apply(CardBitmap);
-
-
-
-                        TmpCard = new MagicCard
-                        {
-                            Corners = corners,
-                            CardBitmap = CardBitmap,
-                            CardArtBitmap = CardArtBitmap
-                        };
-
-                        //DetectedMagicCards.Add(card);
+                        var distance = corners[0].DistanceTo(point);
+                        if (corners[0].DistanceTo(point) < 40)
+                            sameCard = true;
                     }
+
+                    if (sameCard)
+                        continue;
+
+                    // Hack to prevent it from detecting smaller sections of the card instead of the whole card
+                    var area = GetArea(corners);
+
+                    if (area < 20000)// || area > 35000)
+                        continue;
+
+
+                    cardPositions.Add(corners[0]);
+
+                    g.DrawPolygon(pen, ToPointsArray(corners));
+
+                    // Extract the card bitmap
+                    //var transformFilter = new QuadrilateralTransformation(corners, 211, 298);
+                    var transformFilter = new QuadrilateralTransformation(corners, 225, 325);
+                    CardBitmap = transformFilter.Apply(CameraBitmap);
+
+                    var artCorners = new List<IntPoint>
+                    {
+                        new IntPoint(14, 35),
+                        new IntPoint(193, 35),
+                        new IntPoint(193, 168),
+                        new IntPoint(14, 168)
+                    };
+
+                    // Extract the art bitmap
+                    var cartArtFilter = new QuadrilateralTransformation(artCorners, 183, 133);
+                    CardArtBitmap = cartArtFilter.Apply(CardBitmap);
+
+
+
+                    TmpCard = new MagicCard
+                    {
+                        Corners = corners,
+                        CardBitmap = CardBitmap,
+                        CardArtBitmap = CardArtBitmap
+                    };
+
+                    //DetectedMagicCards.Add(card);
                 }
             }
 

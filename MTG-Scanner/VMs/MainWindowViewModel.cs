@@ -6,6 +6,7 @@ using MTG_Scanner.Utils;
 using MTG_Scanner.Utils.Impl;
 using Ninject;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -22,12 +23,13 @@ namespace MTG_Scanner.VMs
     {
         [DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ph_dct_imagehash(string file, ref ulong hash);
-        [DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ph_hamming_distance(ulong hasha, ulong hashb);
+        //[DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
+        //public static extern int ph_hamming_distance(ulong hasha, ulong hashb);
 
         private readonly IUtil _util;
         private XmlFileLoader _xmlFileLoader;
         private readonly IXmlFileCreator _xmlFileCreator;
+        private int intCounter;
         public IWebcamController WebcamController { get; set; }
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
@@ -110,18 +112,46 @@ namespace MTG_Scanner.VMs
             }
         }
 
-        public void ComparePHash(MagicCard cardBitmap)
+        public void ComparePHash(MagicCard card)
         {
+            intCounter++;
+            var tmpPath = Path.GetTempPath();
+            card.CardBitmap.Save(tmpPath + "tmpCard.bmp", ImageFormat.Bmp);
+            card.PathOfCardImage = tmpPath + "tmpCard.bmp";
             //compute Phash for card
-            //var tmpHash = ComputePHash(cardBitmap);
+            card.PHash = ComputePHash(card);
             //compare on each card
+            var delta = ComparePHashes(card);
+            if (delta > 87)
+                Debug.WriteLine("Success -> " + delta);
+            else
+            {
+                Debug.WriteLine("FAIL! -> " + delta);
+
+            }
         }
 
-        //private ulong ComputePHash(MagicCard cardBitmap)
-        //{
-        //    //ulong hash = 0;
-        //    //ph_dct_imagehash(cardBitmap.PathOfCardImage, ref hash);
-        //    //throw new NotImplementedException();
-        //}
+        private static ulong ComparePHashes(MagicCard card)
+        {
+            var x = card.PHash ^ 4571825439342088429;//Call of the full moon
+            const ulong m1 = 0x5555555555555555UL;
+            const ulong m2 = 0x3333333333333333UL;
+            const ulong h01 = 0x0101010101010101UL;
+            const ulong m4 = 0x0f0f0f0f0f0f0f0fUL;
+
+            x -= (x >> 1) & m1;
+            x = (x & m2) + ((x >> 2) & m2);
+            x = (x + (x >> 4)) & m4;
+            var returnMe = (x * h01) >> 56;
+            return 100 - returnMe;
+
+        }
+
+        private ulong ComputePHash(MagicCard card)
+        {
+            ulong hash = 0;
+            ph_dct_imagehash(card.PathOfCardImage, ref hash);
+            return hash;
+        }
     }
 }
