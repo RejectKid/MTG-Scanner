@@ -1,20 +1,16 @@
-﻿using System;
+﻿using MTG_Scanner.Utils;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using MTG_Scanner.Utils;
 
-namespace MTG_Scanner.Models
+namespace MTG_Scanner.Models.Impl
 {
     internal class XmlFileCreator : IXmlFileCreator
     {
         private readonly IUtil _util;
         private XmlDocument _xmlfile;
         private XmlElement _rootNode;
-        private const string _xmlDbPath = @"..\..\Resources\Card Db\MagicCardDB_Simple.xml";
+        private const string XmlDbPath = @"..\..\Resources\Card Db\MagicCardDB_Simple.xml";
 
         public XmlFileCreator(IUtil util)
         {
@@ -40,7 +36,7 @@ namespace MTG_Scanner.Models
                 _rootNode.AppendChild(cardElement);
             }
             SaveXmlFile();
-            return Path.GetFullPath(_xmlDbPath);
+            return Path.GetFullPath(XmlDbPath);
         }
 
         private void AddChildElementAndValue(XmlNode cardElement, string propertyName, string propertyValue)
@@ -53,7 +49,7 @@ namespace MTG_Scanner.Models
 
         private void SaveXmlFile()
         {
-            _xmlfile.Save(_xmlDbPath);
+            _xmlfile.Save(XmlDbPath);
         }
     }
 }

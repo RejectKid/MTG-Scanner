@@ -5,8 +5,9 @@ using AForge.Math.Geometry;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 
-namespace MTG_Scanner.Models
+namespace MTG_Scanner.Models.Impl
 {
     class WebcamController : IWebcamController
     {
@@ -69,11 +70,11 @@ namespace MTG_Scanner.Models
                 List<IntPoint> corners;
                 var sameCard = false;
 
-                //var what = shapeChecker.IsQuadrilateral(edgePoints, out corners);
-
                 // is triangle or quadrilateral
                 if (shapeChecker.IsQuadrilateral(edgePoints, out corners))
                 {
+                    if (!corners.Any())
+                        return;
                     // get sub-type
                     var subType = shapeChecker.CheckPolygonSubType(corners);
 
@@ -100,7 +101,6 @@ namespace MTG_Scanner.Models
 
                     if (area < 20000)// || area > 35000)
                         continue;
-
 
                     cardPositions.Add(corners[0]);
 

@@ -5,6 +5,7 @@
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
                       xmlns:vMs="clr-namespace:MTG_Scanner.VMs"
+                      xmlns:view="clr-namespace:MTG_Scanner"
                       mc:Ignorable="d"
                       Title="MTG Card Scanner"
                       NonActiveGlowBrush="red"
@@ -84,6 +85,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -92,13 +94,18 @@
             </Grid.ColumnDefinitions>
             <Menu Grid.Row="0" Margin="5" VerticalAlignment="Stretch" HorizontalAlignment="Left">
                 <MenuItem Header="New Card Import"></MenuItem>
-                <MenuItem Name="_computePHashes" Header="Generate pHashes" Click="ComputePHashes_OnClick"></MenuItem>
+                <MenuItem Name="ComputePHashes" Header="Generate pHashes" Click="ComputePHashes_OnClick"></MenuItem>
             </Menu>
             <!--cupcake do stuff here with webcam-->
-            <Image Name="_camImage" Grid.Row="1" Grid.Column ="0" Width="800" Height="600"></Image>
-            <Image Name="_camImageFiltered" Grid.Row="1" Grid.Column ="1" Width="800" Height="600"></Image>
-            <Image Name="_camImageCardArt" Grid.Row="2" Grid.Column ="1" Width="400" Height="400"></Image>
-            <Image Name="_camImageFullCard" Grid.Row="2" Grid.Column ="0" Width="400" Height="400"></Image>
+            <Image Name="CamImage" Grid.Row="1" Grid.Column ="0" Width="800" Height="600"></Image>
+            <Image Name="CamImageFiltered" Grid.Row="1" Grid.Column ="1" Width="800" Height="600"></Image>
+            <!--<Image Name="_camImageCardArt" Grid.Row="2" Grid.Column ="1" Width="400" Height="400"></Image>-->
+            
+
+            <TextBlock Name="CardMatched" Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="0" FontSize="60" Text="{Binding (view:MainWindow.MatchedCard)}" 
+                       Foreground="White" TextAlignment="Center"></TextBlock>
+
+            <Image Name="_camImageFullCard" Grid.Row="3" Grid.Column ="0" Width="400" Height="400"></Image>
 
 
 

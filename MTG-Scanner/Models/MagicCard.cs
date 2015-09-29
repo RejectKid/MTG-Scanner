@@ -1,15 +1,21 @@
 ﻿using AForge;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Xml.Serialization;
 
 namespace MTG_Scanner.Models
 {
     public class MagicCard
     {
-        public string PathOfCardImage { get; set; }
+        [XmlAttribute("set")]
         public string Set { get; set; }
+        [XmlAttribute("name")]
         public string Name { get; set; }
+        [XmlAttribute("phash")]
         public ulong PHash { get; set; }
+
+        public ulong DeltaMatch { get; set; }
+        public string PathOfCardImage { get; set; }
         public int Id { get; set; }
         public string Type { get; set; }
         public string Rarity { get; set; }
@@ -42,6 +48,11 @@ namespace MTG_Scanner.Models
 
         public MagicCard()
         {
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

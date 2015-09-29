@@ -1,15 +1,15 @@
 ﻿using DirectX.Capture;
 using MahApps.Metro.Controls.Dialogs;
-using MTG_Scanner.Models;
 using MTG_Scanner.Utils.Impl;
 using MTG_Scanner.VMs;
-using System.Collections.Generic;
+using Ninject;
+using System;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-
+using Application = System.Windows.Application;
 
 namespace MTG_Scanner
 {
@@ -22,17 +22,14 @@ namespace MTG_Scanner
         private Capture _capturer;
         private readonly Filters _cameraFilters;
         static readonly object Locker = new object();
-        private List<MagicCard> _previousMagicCards;
-        private readonly List<MagicCard> _currentListOfMagicCards = new List<MagicCard>();
-        //private Bitmap _cameraBitmapLive;
         private readonly PictureBox _cam = new PictureBox();
 
         public MainWindow()
         {
+            KernelUtil.CreateKernel();
             _cameraFilters = new Filters();
             InitializeComponent();
-            KernelUtil.CreateKernel();
-            _vm = new MainWindowViewModel();
+            _vm = KernelUtil.Kernel.Get<MainWindowViewModel>();
             DataContext = _vm;
 
             LoadCamera();
@@ -40,50 +37,75 @@ namespace MTG_Scanner
 
         private void LoadCamera()
         {
-            _capturer = new Capture(_cameraFilters.VideoInputDevices[0], _cameraFilters.AudioInputDevices[0]);
-            var vc = _capturer.VideoCaps;
-            _capturer.FrameSize = new System.Drawing.Size(640, 480);
-            _capturer.PreviewWindow = _cam;
+            _capturer = new Capture(_cameraFilters.VideoInputDevices[0], _cameraFilters.AudioInputDevices[0])
+            {
+                FrameSize = new System.Drawing.Size(640, 480),
+                PreviewWindow = _cam
+            };
             _capturer.FrameEvent2 += CaptureDone;
             _capturer.GrapImg();
+
         }
 
         private void CaptureDone(Bitmap e)
         {
             lock (Locker)
             {
-                _previousMagicCards = new List<MagicCard>(_currentListOfMagicCards);
-                _currentListOfMagicCards.Clear();
                 _vm.WebcamController.CameraBitmap = e;
-                //_cameraBitmapLive = (Bitmap)_vm.WebcamController.CameraBitmap.Clone();
-                _vm.WebcamController.DetectQuads();
-                //matchCard();
+                try
+                {
+                    _vm.WebcamController.DetectQuads();
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+
 
                 var tmpImge = _vm.ConvertBitMap(_vm.WebcamController.FilteredBitmap);
                 tmpImge.Freeze();
-                Dispatcher.BeginInvoke(new ThreadStart(() => _camImageFiltered.Source = tmpImge));
+                Dispatcher.BeginInvoke(new ThreadStart(() => CamImageFiltered.Source = tmpImge));
 
                 var tmpImge2 = _vm.ConvertBitMap(_vm.WebcamController.CameraBitmap);
                 tmpImge2.Freeze();
-                Dispatcher.BeginInvoke(new ThreadStart(() => _camImage.Source = tmpImge2));
+                Dispatcher.BeginInvoke(new ThreadStart(() => CamImage.Source = tmpImge2));
 
-                var tmpImge3 = _vm.ConvertBitMap(_vm.WebcamController.CardBitmap);
-                tmpImge3.Freeze();
-                Dispatcher.BeginInvoke(new ThreadStart(() => _camImageCardArt.Source = tmpImge3));
-                Task.Run(() =>
-                {
-                    if (_vm.WebcamController.TmpCard != null)
-                        _vm.ComparePHash(_vm.WebcamController.TmpCard);
+                //var tmpImge3 = _vm.ConvertBitMap(_vm.WebcamController.CardBitmap);
+                //tmpImge3.Freeze();
+                //Dispatcher.BeginInvoke(new ThreadStart(() => _camImageCardArt.Source = tmpImge3));
 
-                });
-
-                var tmpImge4 = _vm.ConvertBitMap(_vm.WebcamController.CardArtBitmap);
+                var tmpImge4 = _vm.ConvertBitMap(_vm.WebcamController.CardBitmap);
                 tmpImge4.Freeze();
                 Dispatcher.BeginInvoke(new ThreadStart(() => _camImageFullCard.Source = tmpImge4));
+
+                Task.Run(() =>
+                {
+                    if (_vm.WebcamController.TmpCard == null)
+                        return;
+
+                    var matchedCard = _vm.ComparePHash(_vm.WebcamController.TmpCard);
+
+                    if (matchedCard != null)
+                        Application.Current.Dispatcher.Invoke(() =>
+                            MatchedCard = "Best Match --> " + matchedCard + " : " + matchedCard.DeltaMatch);
+                });
             }
         }
 
+        public static readonly DependencyProperty MatchedCardProperty = DependencyProperty.Register(
+            "MatchedCard", typeof(string), typeof(MainWindow), new PropertyMetadata(default(string), PropertyChangedCallback));
 
+        private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var window = (MainWindow)d;
+            window.CardMatched.Text = (string)e.NewValue;
+        }
+
+        public string MatchedCard
+        {
+            get { return (string)GetValue(MatchedCardProperty); }
+            set { SetValue(MatchedCardProperty, value); }
+        }
 
         private async void ComputePHashes_OnClick(object sender, RoutedEventArgs e)
         {

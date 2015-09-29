@@ -1,22 +1,34 @@
-﻿using System;
+﻿using MTG_Scanner.Models;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using MTG_Scanner.Models;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace MTG_Scanner.Utils.Impl
 {
     public class Util : IUtil
     {
-        //private readonly IMagicCardFactory _magicCardFactory;
-        private readonly Regex _matchUntilDot = new Regex(@"^([^.]*)");
+        private readonly ICardDatabase _cardDatabase;
 
-        public Util()
-        //public Util( IMagicCardFactory magicCardFactory )
+        [DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int ph_dct_imagehash(string file, ref ulong hash);
+
+        public Util(ICardDatabase cardDatabase)
         {
-            //_magicCardFactory = magicCardFactory;
+            _cardDatabase = cardDatabase;
         }
+
+
+        private readonly Regex _matchUntilDot = new Regex(@"^([^.]*)");
+        private readonly Queue<MagicCard> _compareList = new Queue<MagicCard>();
 
         public void TraverseTree(string root, List<MagicCard> listOfMagicCards)
         {
@@ -105,6 +117,100 @@ namespace MTG_Scanner.Utils.Impl
         {
             var body = ((MemberExpression)expression.Body);
             return body.Member.Name;
+        }
+
+        public MagicCard ComparePHash(MagicCard card)
+        {
+            var tmpPath = Path.GetTempPath();
+            card.CardBitmap.Save(tmpPath + "tmpCard.bmp", ImageFormat.Bmp);
+            card.PathOfCardImage = tmpPath + "tmpCard.bmp";
+            //compute Phash for card
+            card.PHash = ComputePHash(card);
+            //compare on each card
+            var tmpList = new List<MagicCard>();
+            foreach (var dbCard in _cardDatabase.ListOfAllMagicCards)
+            {
+                var delta = ComparePHashes(card, dbCard);
+                if (delta < 90)
+                    continue;
+
+                dbCard.DeltaMatch = delta;
+                tmpList.Add(dbCard);
+            }
+            var winner = tmpList.OrderByDescending(o => o.DeltaMatch).FirstOrDefault();
+            if (winner != null)
+                _compareList.Enqueue(winner);
+
+            var realWinner = CalculateWinner();
+
+            if (winner != null)
+                Debug.WriteLine("Best Match --> " + winner + "--> " + winner.DeltaMatch);
+
+
+            return realWinner ?? winner;
+        }
+
+        private MagicCard CalculateWinner()
+        {
+            if (_compareList.Count <= 40)
+                return null;
+
+            var countWinners = (from cards in _compareList
+                                group cards by cards.Name into c
+                                select new
+                                {
+                                    Name = c.Key,
+                                    HashTotal = c.Sum(o => (int)o.DeltaMatch),
+                                    Count = c.Count(),
+                                    WeightedPower = c.Sum(o => (int)o.DeltaMatch) * c.Count()
+                                }).ToList();
+            var realWinner = countWinners.OrderByDescending(o => o.WeightedPower).FirstOrDefault();
+            _compareList.Dequeue();
+            return _compareList.FirstOrDefault(o => o.Name == realWinner?.Name);
+        }
+
+        public ulong ComputePHash(MagicCard card)
+        {
+            ulong hash = 0;
+            ph_dct_imagehash(card.PathOfCardImage, ref hash);
+            return hash;
+        }
+
+        private static ulong ComparePHashes(MagicCard card, MagicCard dbCard)
+        {
+            var x = card.PHash ^ dbCard.PHash;
+            const ulong m1 = 0x5555555555555555UL;
+            const ulong m2 = 0x3333333333333333UL;
+            const ulong h01 = 0x0101010101010101UL;
+            const ulong m4 = 0x0f0f0f0f0f0f0f0fUL;
+
+            x -= (x >> 1) & m1;
+            x = (x & m2) + ((x >> 2) & m2);
+            x = (x + (x >> 4)) & m4;
+            var returnMe = (x * h01) >> 56;
+            return 100 - returnMe;
+
+        }
+
+        /// <summary>
+        /// Converts a Bitmap image to an image source and freezes the img
+        /// </summary>
+        /// <param name="cameraBitmap"></param>
+        /// <returns></returns>
+        public ImageSource ConvertBitmapInMemory(Image cameraBitmap)
+        {
+            using (var memStream = new MemoryStream())
+            {
+                cameraBitmap.Save(memStream, ImageFormat.Bmp);
+                memStream.Position = 0;
+                var bmpImage = new BitmapImage();
+                bmpImage.BeginInit();
+                bmpImage.StreamSource = memStream;
+                bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+                bmpImage.EndInit();
+                bmpImage.Freeze();
+                return bmpImage;
+            }
         }
     }
 

@@ -2,7 +2,7 @@
 
 namespace MTG_Scanner.Models
 {
-    interface IXmlFileCreator
+    public interface IXmlFileCreator
     {
         string CreateXmlDb(List<MagicCard> listOfCards);
     }

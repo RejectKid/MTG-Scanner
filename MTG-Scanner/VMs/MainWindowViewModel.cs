@@ -3,46 +3,36 @@ using MahApps.Metro.Controls.Dialogs;
 using MTG_Scanner.Models;
 using MTG_Scanner.Theme;
 using MTG_Scanner.Utils;
-using MTG_Scanner.Utils.Impl;
-using Ninject;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Brush = System.Windows.Media.Brush;
 
 namespace MTG_Scanner.VMs
 {
     public class MainWindowViewModel
     {
-        [DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ph_dct_imagehash(string file, ref ulong hash);
-        //[DllImport(@"\Extern DLLs\pHash.dll", CallingConvention = CallingConvention.Cdecl)]
-        //public static extern int ph_hamming_distance(ulong hasha, ulong hashb);
-
-        private readonly IUtil _util;
-        private XmlFileLoader _xmlFileLoader;
-        private readonly IXmlFileCreator _xmlFileCreator;
-        private int intCounter;
+        public IUtil Util { get; set; }
+        public IXmlFileCreator XmlFileCreator { get; set; }
+        public ICardDatabase CardDatabase { get; set; }
         public IWebcamController WebcamController { get; set; }
+
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
         public List<MagicCard> ListOfMagicCards { get; set; } = new List<MagicCard>();
-        private const string XmlDbPath = @"H:\Compy Sci\MTG-Scanner\MTG-Scanner\Resources\Card Db\StandardDB.xml";
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(IUtil util,
+            IXmlFileCreator xmlFileCreator,
+            IWebcamController webcamController,
+            ICardDatabase cardDatabase)
         {
+            Util = util;
+            XmlFileCreator = xmlFileCreator;
+            WebcamController = webcamController;
+            CardDatabase = cardDatabase;
             GenerateThemeData();
-            _util = KernelUtil.Kernel.Get<IUtil>();
-            _xmlFileCreator = KernelUtil.Kernel.Get<IXmlFileCreator>();
-            WebcamController = KernelUtil.Kernel.Get<IWebcamController>();
-            _xmlFileLoader = new XmlFileLoader();
         }
 
         private void GenerateThemeData()
@@ -72,14 +62,13 @@ namespace MTG_Scanner.VMs
         {
             ListOfMagicCards.Clear();
             //read images in resources
-            _util.TraverseTree(selectedPath, ListOfMagicCards);
+            Util.TraverseTree(selectedPath, ListOfMagicCards);
             //compute hashes
             var curCard = 0;
-            var totalCards = ListOfMagicCards.Count();
-            var hashingLoop = Parallel.ForEach(ListOfMagicCards, card =>
+            var totalCards = ListOfMagicCards.Count;
+            Parallel.ForEach(ListOfMagicCards, card =>
             {
-                ulong hash = 0;
-                ph_dct_imagehash(card.PathOfCardImage, ref hash);
+                var hash = Util.ComputePHash(card);
                 card.PHash = hash;
                 curCard++;
                 dialogController.SetProgress((double)curCard / totalCards);
@@ -87,7 +76,7 @@ namespace MTG_Scanner.VMs
             });
 
             //Create Basic XML DB of pHashes
-            var path = _xmlFileCreator.CreateXmlDb(ListOfMagicCards);
+            var path = XmlFileCreator.CreateXmlDb(ListOfMagicCards);
             return path;
         }
 
@@ -98,60 +87,13 @@ namespace MTG_Scanner.VMs
         /// <returns></returns>
         public ImageSource ConvertBitMap(Image cameraBitmap)
         {
-            using (var memStream = new MemoryStream())
-            {
-                cameraBitmap.Save(memStream, ImageFormat.Bmp);
-                memStream.Position = 0;
-                var bmpImage = new BitmapImage();
-                bmpImage.BeginInit();
-                bmpImage.StreamSource = memStream;
-                bmpImage.CacheOption = BitmapCacheOption.OnLoad;
-                bmpImage.EndInit();
-                bmpImage.Freeze();
-                return bmpImage;
-            }
+            return Util.ConvertBitmapInMemory(cameraBitmap);
         }
 
-        public void ComparePHash(MagicCard card)
+        public MagicCard ComparePHash(MagicCard card)
         {
-            intCounter++;
-            var tmpPath = Path.GetTempPath();
-            card.CardBitmap.Save(tmpPath + "tmpCard.bmp", ImageFormat.Bmp);
-            card.PathOfCardImage = tmpPath + "tmpCard.bmp";
-            //compute Phash for card
-            card.PHash = ComputePHash(card);
-            //compare on each card
-            var delta = ComparePHashes(card);
-            if (delta > 87)
-                Debug.WriteLine("Success -> " + delta);
-            else
-            {
-                Debug.WriteLine("FAIL! -> " + delta);
-
-            }
-        }
-
-        private static ulong ComparePHashes(MagicCard card)
-        {
-            var x = card.PHash ^ 4571825439342088429;//Call of the full moon
-            const ulong m1 = 0x5555555555555555UL;
-            const ulong m2 = 0x3333333333333333UL;
-            const ulong h01 = 0x0101010101010101UL;
-            const ulong m4 = 0x0f0f0f0f0f0f0f0fUL;
-
-            x -= (x >> 1) & m1;
-            x = (x & m2) + ((x >> 2) & m2);
-            x = (x + (x >> 4)) & m4;
-            var returnMe = (x * h01) >> 56;
-            return 100 - returnMe;
-
-        }
-
-        private ulong ComputePHash(MagicCard card)
-        {
-            ulong hash = 0;
-            ph_dct_imagehash(card.PathOfCardImage, ref hash);
-            return hash;
+            var tmpCard = Util.ComparePHash(card);
+            return tmpCard;
         }
     }
 }

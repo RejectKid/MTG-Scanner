@@ -1,5 +1,7 @@
 ﻿
 using MTG_Scanner.Models;
+using MTG_Scanner.Models.Impl;
+using MTG_Scanner.VMs;
 using Ninject.Modules;
 
 namespace MTG_Scanner.Utils.Impl
@@ -11,7 +13,9 @@ namespace MTG_Scanner.Utils.Impl
             //Bind<IMagicCardFactory>().ToFactory();
             Bind<IUtil>().To<Util>().InSingletonScope();
             Bind<IXmlFileCreator>().To<XmlFileCreator>();
+            Bind<ICardDatabase>().To<CardDatabase>().InSingletonScope();
             Bind<IWebcamController>().To<WebcamController>();
+            Bind<MainWindowViewModel>().ToSelf();
         }
     }
 }
