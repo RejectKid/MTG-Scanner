@@ -62,14 +62,16 @@ namespace MTG_Scanner.VMs
         {
             ListOfMagicCards.Clear();
             //read images in resources
-            Util.TraverseTree(selectedPath, ListOfMagicCards);
+            Util.TraverseTree(@"H:\Compy Sci\MTG-Scanner\MTG-Scanner\Resources\Card Images", ListOfMagicCards);
+            //Util.TraverseTree(selectedPath, ListOfMagicCards);
+            //Util.TraverseTree(selectedPath, ListOfMagicCards);
             //compute hashes
             var curCard = 0;
             var totalCards = ListOfMagicCards.Count;
             Parallel.ForEach(ListOfMagicCards, card =>
             {
                 var hash = Util.ComputePHash(card);
-                card.PHash = hash;
+                card.PHashes.Add(hash);
                 curCard++;
                 dialogController.SetProgress((double)curCard / totalCards);
                 dialogController.SetMessage("pHashing real hard! Finished: " + curCard + "/" + totalCards);

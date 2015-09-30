@@ -125,12 +125,19 @@ namespace MTG_Scanner.Utils.Impl
             card.CardBitmap.Save(tmpPath + "tmpCard.bmp", ImageFormat.Bmp);
             card.PathOfCardImage = tmpPath + "tmpCard.bmp";
             //compute Phash for card
-            card.PHash = ComputePHash(card);
+            card.PHashes.Add(ComputePHash(card));
             //compare on each card
             var tmpList = new List<MagicCard>();
             foreach (var dbCard in _cardDatabase.ListOfAllMagicCards)
             {
-                var delta = ComparePHashes(card, dbCard);
+                ulong delta = 0;
+                foreach (var pHash in dbCard.PHashes)
+                {
+                    var tmpdelta = ComparePHashes(card.PHashes.FirstOrDefault(), pHash);
+                    if (tmpdelta > delta)
+                        delta = tmpdelta;
+                }
+
                 if (delta < 90)
                     continue;
 
@@ -176,9 +183,9 @@ namespace MTG_Scanner.Utils.Impl
             return hash;
         }
 
-        private static ulong ComparePHashes(MagicCard card, MagicCard dbCard)
+        private static ulong ComparePHashes(ulong cardPHash, ulong dbCardPHash)
         {
-            var x = card.PHash ^ dbCard.PHash;
+            var x = cardPHash ^ dbCardPHash;
             const ulong m1 = 0x5555555555555555UL;
             const ulong m2 = 0x3333333333333333UL;
             const ulong h01 = 0x0101010101010101UL;

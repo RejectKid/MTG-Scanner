@@ -31,14 +31,18 @@ namespace MTG_Scanner.Models.Impl
         private void GetCards()
         {
             var allcards = ListOfxmlDatabase.Select(doc => doc.Descendants("card").ToList()).SelectMany(query => query);
-            foreach (var tmpCard in allcards.Select(card => new MagicCard
+            foreach (var card in allcards)
             {
-                Id = Convert.ToInt32(card.Element("id")?.Value),
-                Name = card.Element("name")?.Value,
-                Set = card.Element("set")?.Value,
-                PHash = Convert.ToUInt64(GetNullableElementValue(card, "phash"))
-            }))
-            {
+                var tmpCard = new MagicCard
+                {
+                    Id = Convert.ToInt32(card.Element("id")?.Value),
+                    Name = card.Element("name")?.Value,
+                    Set = card.Element("set")?.Value
+                };
+                //get list of pHashes
+                var phashes = card.Element("phashes")?.Elements("phash").ToList();
+                phashes?.ForEach(o => tmpCard.PHashes.Add(Convert.ToUInt64(o.Value)));
+
                 ListOfAllMagicCards.Add(tmpCard);
             }
 

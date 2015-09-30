@@ -11,8 +11,8 @@ namespace MTG_Scanner.Models
         public string Set { get; set; }
         [XmlAttribute("name")]
         public string Name { get; set; }
-        [XmlAttribute("phash")]
-        public ulong PHash { get; set; }
+        [XmlArray("phashes")]
+        public List<ulong> PHashes { get; set; } = new List<ulong>();
 
         public ulong DeltaMatch { get; set; }
         public string PathOfCardImage { get; set; }

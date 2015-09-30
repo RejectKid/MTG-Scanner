@@ -1,6 +1,8 @@
-﻿using MTG_Scanner.Utils;
+﻿using MoreLinq;
+using MTG_Scanner.Utils;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace MTG_Scanner.Models.Impl
@@ -27,14 +29,28 @@ namespace MTG_Scanner.Models.Impl
 
         public string CreateXmlDb(List<MagicCard> listOfCards)
         {
-            foreach (var magicCard in listOfCards)
+
+            foreach (var distinctSet in listOfCards.DistinctBy(o => o.Set))
             {
-                var cardElement = _xmlfile.CreateElement("card");
-                AddChildElementAndValue(cardElement, _util.GetVariableName(() => magicCard.Name), magicCard.Name);
-                AddChildElementAndValue(cardElement, _util.GetVariableName(() => magicCard.Set), magicCard.Set);
-                AddChildElementAndValue(cardElement, _util.GetVariableName(() => magicCard.PHash), magicCard.PHash.ToString());
-                _rootNode.AppendChild(cardElement);
+                var enumerable = listOfCards.Where(op => op.Set == distinctSet.Set).DistinctBy(o => o.Name);
+                foreach (var distinctCard in enumerable)
+                {
+                    var cardElement = _xmlfile.CreateElement("card");
+                    AddChildElementAndValue(cardElement, _util.GetVariableName(() => distinctCard.Name), distinctCard.Name);
+                    AddChildElementAndValue(cardElement, _util.GetVariableName(() => distinctCard.Set), distinctCard.Set);
+                    var phashesElement = _xmlfile.CreateElement("phashes");
+                    foreach (var magicCard in listOfCards.Where(o => o.Name == distinctCard.Name && o.Set == distinctSet.Set))
+                    {
+                        foreach (var phash in magicCard.PHashes)
+                        {
+                            AddChildElementAndValue(phashesElement, "phash", phash.ToString());
+                        }
+                    }
+                    cardElement.AppendChild(phashesElement);
+                    _rootNode.AppendChild(cardElement);
+                }
             }
+
             SaveXmlFile();
             return Path.GetFullPath(XmlDbPath);
         }

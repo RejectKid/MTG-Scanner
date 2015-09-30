@@ -1,1 +1,0 @@
-Default Folder of scan storage from Gatherer Extractor.
