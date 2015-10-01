@@ -9,8 +9,10 @@
                       mc:Ignorable="d"
                       Title="MTG Card Scanner"
                       NonActiveGlowBrush="red"
-                      Width="960"
-                      Height="600"
+                      Width="1000"
+                      Height="900"
+                      MinWidth="1000"
+                      MinHeight="900"
                       GlowBrush="{DynamicResource AccentColorBrush}" 
                       d:DataContext="{d:DesignInstance vMs:MainWindowViewModel}"
                       SaveWindowPosition="True">
@@ -85,30 +87,41 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="533" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Menu Grid.Row="0" Margin="5" VerticalAlignment="Stretch" HorizontalAlignment="Left">
-                <MenuItem Header="New Card Import"></MenuItem>
+                <MenuItem Name="NewCardImportButton" Header="New Card Import" Click="StartCardImportFile"></MenuItem>
+                <MenuItem Name="EndCardImportButton" Visibility="Collapsed" Header="End Card Import" Click="EndCardImportFile"></MenuItem>
                 <MenuItem Name="ComputePHashes" Header="Generate pHashes" Click="ComputePHashes_OnClick"></MenuItem>
             </Menu>
             <!--cupcake do stuff here with webcam-->
-            <Image Name="CamImage" Grid.Row="1" Grid.Column ="0" Width="800" Height="600"></Image>
-            <Image Name="CamImageFiltered" Grid.Row="1" Grid.Column ="1" Width="800" Height="600"></Image>
-            <!--<Image Name="_camImageCardArt" Grid.Row="2" Grid.Column ="1" Width="400" Height="400"></Image>-->
-            
+            <StackPanel Grid.Row="1" Grid.Column ="0" MaxWidth="533" MaxHeight="400" HorizontalAlignment="Left">
+                <TextBlock Text="Actual Cam Feed" Foreground="{DynamicResource BlackColorBrush}" FontSize="15"></TextBlock>
+                <Image Name="CamImage"></Image>
+            </StackPanel>
+            <StackPanel Grid.Row="2" Grid.Column ="0" MaxWidth="533" MaxHeight="400" HorizontalAlignment="Left">
+                <TextBlock Text="Filtered Cam Feed" Foreground="{DynamicResource BlackColorBrush}" FontSize="15"></TextBlock>
+                <Image Name="CamImageFiltered"  HorizontalAlignment="Left"></Image>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column ="1" Grid.RowSpan="2" Width="225" Height="350" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <TextBlock Text="Full Card Cam Feed" Foreground="{DynamicResource BlackColorBrush}" FontSize="15"></TextBlock>
+                <Image Name="CamImageFullCard"   VerticalAlignment="Top" HorizontalAlignment="Left"></Image>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column ="2" Grid.RowSpan="2" Width="225" Height="350" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <TextBlock Text="Original Image" Foreground="{DynamicResource BlackColorBrush}" FontSize="15"></TextBlock>
+                <Image Name="DatabaseCard" Source="{Binding MatchedCard.PathOfCardImage}" VerticalAlignment="Top" HorizontalAlignment="Left"></Image>
+            </StackPanel>
+            <StackPanel Grid.Row="2" Grid.Column ="1" Grid.ColumnSpan="2" Width="225" Height="325" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <TextBlock Name="CardMatched" FontSize="15" Text="{Binding MatchedCard.Name}" Foreground="{DynamicResource BlackColorBrush}" TextAlignment="Center"></TextBlock>
+            </StackPanel>
 
-            <TextBlock Name="CardMatched" Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="0" FontSize="60" Text="{Binding (view:MainWindow.MatchedCard)}" 
-                       Foreground="White" TextAlignment="Center"></TextBlock>
-
-            <Image Name="_camImageFullCard" Grid.Row="3" Grid.Column ="0" Width="400" Height="400"></Image>
-
-
-
+            <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Content="Add Card To List or just press space" Click="AddCardToCardImportFile"></Button>
         </Grid>
     </controls:MetroContentControl>
 

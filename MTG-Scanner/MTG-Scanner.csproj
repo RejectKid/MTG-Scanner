@@ -123,6 +123,8 @@
     </ApplicationDefinition>
     <Compile Include="Models\ICardDatabase.cs" />
     <Compile Include="Models\IMagicCardFactory.cs" />
+    <Compile Include="Models\Impl\CardImportFileCreator.cs" />
+    <Compile Include="Models\ICardImportFileCreator.cs" />
     <Compile Include="Models\IWebcamController.cs" />
     <Compile Include="Models\IXmlFileCreator.cs" />
     <Compile Include="Models\MagicCard.cs" />
@@ -130,6 +132,8 @@
     <Compile Include="Models\Impl\WebcamController.cs" />
     <Compile Include="Models\Impl\XMLFileCreator.cs" />
     <Compile Include="Models\Impl\CardDatabase.cs" />
+    <Compile Include="Notifier\Notifier.cs" />
+    <Compile Include="Notifier\NotifyPropertyChangedExtensions.cs" />
     <Compile Include="Theme\AccentColorMenuData.cs" />
     <Compile Include="Theme\AppThemeMenuData.cs" />
     <Compile Include="Utils\Impl\BindHouse.cs" />

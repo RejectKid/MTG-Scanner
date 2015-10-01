@@ -1,4 +1,5 @@
-﻿using MoreLinq;
+﻿using MahApps.Metro.Controls.Dialogs;
+using MoreLinq;
 using MTG_Scanner.Utils;
 using System.Collections.Generic;
 using System.IO;
@@ -27,17 +28,21 @@ namespace MTG_Scanner.Models.Impl
             _xmlfile.AppendChild(_rootNode);
         }
 
-        public string CreateXmlDb(List<MagicCard> listOfCards)
+        public string CreateXmlDb(List<MagicCard> listOfCards, ProgressDialogController dialogController)
         {
+            var curCard = 0;
+            var totalCards = listOfCards.Count;
 
             foreach (var distinctSet in listOfCards.DistinctBy(o => o.Set))
             {
-                var enumerable = listOfCards.Where(op => op.Set == distinctSet.Set).DistinctBy(o => o.Name);
+                var enumerable = listOfCards.Where(op => op.Set == distinctSet.Set && op.PathOfCardImage.Contains("original")).DistinctBy(o => o.Name);
                 foreach (var distinctCard in enumerable)
                 {
                     var cardElement = _xmlfile.CreateElement("card");
                     AddChildElementAndValue(cardElement, _util.GetVariableName(() => distinctCard.Name), distinctCard.Name);
                     AddChildElementAndValue(cardElement, _util.GetVariableName(() => distinctCard.Set), distinctCard.Set);
+                    AddChildElementAndValue(cardElement, _util.GetVariableName(() => distinctCard.PathOfCardImage), distinctCard.PathOfCardImage);
+
                     var phashesElement = _xmlfile.CreateElement("phashes");
                     foreach (var magicCard in listOfCards.Where(o => o.Name == distinctCard.Name && o.Set == distinctSet.Set))
                     {
@@ -48,6 +53,9 @@ namespace MTG_Scanner.Models.Impl
                     }
                     cardElement.AppendChild(phashesElement);
                     _rootNode.AppendChild(cardElement);
+                    curCard++;
+                    dialogController.SetProgress((double)curCard / totalCards);
+                    dialogController.SetMessage("Creating a Simple Database of all those pHashes: " + curCard + "/" + totalCards);
                 }
             }
 

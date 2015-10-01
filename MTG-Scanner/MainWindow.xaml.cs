@@ -9,7 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-using Application = System.Windows.Application;
+using System.Windows.Input;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace MTG_Scanner
 {
@@ -33,7 +34,16 @@ namespace MTG_Scanner
             DataContext = _vm;
 
             LoadCamera();
+            KeyDown += MainWindow_KeyDown;
         }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+                AddCardToImportCardList();
+        }
+
+
 
         private void LoadCamera()
         {
@@ -70,41 +80,18 @@ namespace MTG_Scanner
                 tmpImge2.Freeze();
                 Dispatcher.BeginInvoke(new ThreadStart(() => CamImage.Source = tmpImge2));
 
-                //var tmpImge3 = _vm.ConvertBitMap(_vm.WebcamController.CardBitmap);
-                //tmpImge3.Freeze();
-                //Dispatcher.BeginInvoke(new ThreadStart(() => _camImageCardArt.Source = tmpImge3));
-
                 var tmpImge4 = _vm.ConvertBitMap(_vm.WebcamController.CardBitmap);
                 tmpImge4.Freeze();
-                Dispatcher.BeginInvoke(new ThreadStart(() => _camImageFullCard.Source = tmpImge4));
+                Dispatcher.BeginInvoke(new ThreadStart(() => CamImageFullCard.Source = tmpImge4));
 
                 Task.Run(() =>
                 {
                     if (_vm.WebcamController.TmpCard == null)
                         return;
 
-                    var matchedCard = _vm.ComparePHash(_vm.WebcamController.TmpCard);
-
-                    if (matchedCard != null)
-                        Application.Current.Dispatcher.Invoke(() =>
-                            MatchedCard = "Best Match --> " + matchedCard + " : " + matchedCard.DeltaMatch);
+                    _vm.ComparePHash(_vm.WebcamController.TmpCard);
                 });
             }
-        }
-
-        public static readonly DependencyProperty MatchedCardProperty = DependencyProperty.Register(
-            "MatchedCard", typeof(string), typeof(MainWindow), new PropertyMetadata(default(string), PropertyChangedCallback));
-
-        private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var window = (MainWindow)d;
-            window.CardMatched.Text = (string)e.NewValue;
-        }
-
-        public string MatchedCard
-        {
-            get { return (string)GetValue(MatchedCardProperty); }
-            set { SetValue(MatchedCardProperty, value); }
         }
 
         private async void ComputePHashes_OnClick(object sender, RoutedEventArgs e)
@@ -114,7 +101,8 @@ namespace MTG_Scanner
             //if (fileDialog.SelectedPath != null)
             //_vm.ComputePHashes(fileDialog.SelectedPath);
             var dialogController = await this.ShowProgressAsync("pHasing images... ", "Sit back a little while as I do my magic");
-            var pathSaved = await Task.Run(() => _vm.ComputePHashes(@"..\..\\Resources\Card Images", dialogController));
+            await Task.Run(() => _vm.ComputePHashes(@"..\..\\Resources\Card Images", dialogController));
+            var pathSaved = await Task.Run(() => _vm.SavePHashes(@"..\..\\Resources\Card Images", dialogController));
 
             await dialogController.CloseAsync();
 
@@ -126,6 +114,57 @@ namespace MTG_Scanner
             {
                 await this.ShowMessageAsync("pHashing is complete", "XML file has been saved to " + pathSaved + "  folder");
             }
+        }
+
+        private void StartCardImportFile(object sender, RoutedEventArgs e)
+        {
+            _vm.CardImportFileCreator.CardImportStarted = true;
+            FlipVisibilities();
+        }
+
+        private void FlipVisibilities()
+        {
+            if (NewCardImportButton.Visibility == Visibility.Collapsed)
+            {
+                NewCardImportButton.Visibility = Visibility.Visible;
+                EndCardImportButton.Visibility = Visibility.Collapsed;
+            }
+            else if (EndCardImportButton.Visibility == Visibility.Collapsed)
+            {
+                NewCardImportButton.Visibility = Visibility.Collapsed;
+                EndCardImportButton.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void AddCardToCardImportFile(object sender, RoutedEventArgs e)
+        {
+            AddCardToImportCardList();
+        }
+
+        private void AddCardToImportCardList()
+        {
+            if (_vm.CardImportFileCreator.CardImportStarted)
+                _vm.AddFileToImportList();
+
+
+        }
+
+        private void EndCardImportFile(object sender, RoutedEventArgs e)
+        {
+            var fileDialog = new SaveFileDialog
+            {
+                Filter = @"Text files (*.txt)|*.txt",
+                DefaultExt = "*.txt",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            };
+            ;
+            if (fileDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK || string.IsNullOrEmpty(fileDialog.FileName))
+                return;
+
+            _vm.CardImportFileCreator.FilePath = fileDialog.FileName;
+            _vm.CardImportFileCreator.CreateCardListFile();
+            FlipVisibilities();
+
         }
     }
 }

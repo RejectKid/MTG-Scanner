@@ -100,7 +100,6 @@ namespace MTG_Scanner.Utils.Impl
         private MagicCard CreateBaseCard(string file)
         {
             var fi = new FileInfo(file);
-            //var tmpCard = _magicCardFactory.CreateMagicCard( fi.FullName );
             var tmpCard = new MagicCard();
             if (fi.Directory == null)
                 return tmpCard;

@@ -6,18 +6,21 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Windows;
+using Pen = System.Drawing.Pen;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace MTG_Scanner.Models.Impl
 {
     class WebcamController : IWebcamController
     {
-        public Bitmap CameraBitmap { get; set; } = new Bitmap(800, 600);
+        public Bitmap CameraBitmap { get; set; } = new Bitmap(600, 600);
 
-        public Bitmap CardArtBitmap { get; set; } = new Bitmap(400, 400);
+        //public Bitmap CardArtBitmap { get; set; } = new Bitmap(400, 400);
 
-        public Bitmap CardBitmap { get; set; } = new Bitmap(400, 400);
+        public Bitmap CardBitmap { get; set; } = new Bitmap(225, 325);
 
-        public Bitmap FilteredBitmap { get; set; } = new Bitmap(800, 600);
+        public Bitmap FilteredBitmap { get; set; } = new Bitmap(600, 600);
 
         public List<MagicCard> DetectedMagicCards { get; set; } = new List<MagicCard>();
 
@@ -59,7 +62,7 @@ namespace MTG_Scanner.Models.Impl
             var g = Graphics.FromImage(bm);
             g.DrawImage(FilteredBitmap, 0, 0);
 
-            var pen = new Pen(Color.Purple, 5);
+            var pen = new Pen((Color)new ColorConverter().ConvertFromString(Application.Current.Resources["AccentColor"].ToString()), 5);
             var cardPositions = new List<IntPoint>();
 
 
@@ -107,32 +110,13 @@ namespace MTG_Scanner.Models.Impl
                     g.DrawPolygon(pen, ToPointsArray(corners));
 
                     // Extract the card bitmap
-                    //var transformFilter = new QuadrilateralTransformation(corners, 211, 298);
                     var transformFilter = new QuadrilateralTransformation(corners, 225, 325);
                     CardBitmap = transformFilter.Apply(CameraBitmap);
-
-                    var artCorners = new List<IntPoint>
-                    {
-                        new IntPoint(14, 35),
-                        new IntPoint(193, 35),
-                        new IntPoint(193, 168),
-                        new IntPoint(14, 168)
-                    };
-
-                    // Extract the art bitmap
-                    var cartArtFilter = new QuadrilateralTransformation(artCorners, 183, 133);
-                    CardArtBitmap = cartArtFilter.Apply(CardBitmap);
-
-
-
                     TmpCard = new MagicCard
                     {
                         Corners = corners,
-                        CardBitmap = CardBitmap,
-                        CardArtBitmap = CardArtBitmap
+                        CardBitmap = CardBitmap
                     };
-
-                    //DetectedMagicCards.Add(card);
                 }
             }
 

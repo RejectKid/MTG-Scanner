@@ -15,7 +15,9 @@ namespace MTG_Scanner.Utils.Impl
             Bind<IXmlFileCreator>().To<XmlFileCreator>();
             Bind<ICardDatabase>().To<CardDatabase>().InSingletonScope();
             Bind<IWebcamController>().To<WebcamController>();
+            Bind<ICardImportFileCreator>().To<CardImportFileCreator>();
             Bind<MainWindowViewModel>().ToSelf();
+
         }
     }
 }

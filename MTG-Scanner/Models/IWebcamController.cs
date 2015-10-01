@@ -7,7 +7,7 @@ namespace MTG_Scanner.Models
         void DetectQuads();
         Bitmap CameraBitmap { get; set; }
         Bitmap FilteredBitmap { get; set; }
-        Bitmap CardArtBitmap { get; set; }
+        //Bitmap CardArtBitmap { get; set; }
         Bitmap CardBitmap { get; set; }
         MagicCard TmpCard { get; set; }
     }

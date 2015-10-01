@@ -37,7 +37,8 @@ namespace MTG_Scanner.Models.Impl
                 {
                     Id = Convert.ToInt32(card.Element("id")?.Value),
                     Name = card.Element("name")?.Value,
-                    Set = card.Element("set")?.Value
+                    Set = card.Element("set")?.Value,
+                    PathOfCardImage = card.Element("pathofcardimage")?.Value
                 };
                 //get list of pHashes
                 var phashes = card.Element("phashes")?.Elements("phash").ToList();
