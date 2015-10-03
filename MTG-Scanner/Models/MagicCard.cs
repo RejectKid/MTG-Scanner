@@ -40,6 +40,7 @@ namespace MTG_Scanner.Models
         public List<IntPoint> Corners { get; set; } = new List<IntPoint>();
         public Bitmap CardBitmap { get; set; }
         public Bitmap CardArtBitmap { get; set; }
+        public bool IsFoil { get; set; }
 
         public MagicCard(string pathOfCardImage)
         {

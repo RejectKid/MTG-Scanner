@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace MTG_Scanner.Models.Impl
 {
@@ -12,19 +11,16 @@ namespace MTG_Scanner.Models.Impl
 
         public void CreateCardListFile()
         {
-            var distinctCountCards = (from cards in ListOfMatchedCards
-                                      group cards by cards.Name into c
-                                      select new
-                                      {
-                                          Name = c.Key,
-                                          Count = c.Count()
-                                      }).ToList();
-
             using (var fileStream = new StreamWriter(FilePath))
             {
-                foreach (var distinctCountCard in distinctCountCards)
+                fileStream.WriteLine("Name, Edition, Quantity, Foil");
+
+                foreach (var distinctCountCard in ListOfMatchedCards)
                 {
-                    fileStream.WriteLineAsync(distinctCountCard.Count + " " + distinctCountCard.Name);
+                    fileStream.WriteLine(distinctCountCard.Name + ", " +
+                                              distinctCountCard.Set + ", " +
+                                              1 + ", " +
+                                              distinctCountCard.IsFoil);
                 }
                 fileStream.Close();
             }

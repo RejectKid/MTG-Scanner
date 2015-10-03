@@ -40,7 +40,7 @@ namespace MTG_Scanner
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space)
-                AddCardToImportCardList();
+                AddCardToImportCardList(e.KeyboardDevice.Modifiers == ModifierKeys.Control);
         }
 
 
@@ -119,6 +119,7 @@ namespace MTG_Scanner
         private void StartCardImportFile(object sender, RoutedEventArgs e)
         {
             _vm.CardImportFileCreator.CardImportStarted = true;
+            _vm.CardImportFileCreator.ListOfMatchedCards.Clear();
             FlipVisibilities();
         }
 
@@ -138,13 +139,13 @@ namespace MTG_Scanner
 
         private void AddCardToCardImportFile(object sender, RoutedEventArgs e)
         {
-            AddCardToImportCardList();
+            AddCardToImportCardList(IsFoilCheck.IsChecked != null && (bool)IsFoilCheck.IsChecked);
         }
 
-        private void AddCardToImportCardList()
+        private void AddCardToImportCardList(bool isFoil)
         {
             if (_vm.CardImportFileCreator.CardImportStarted)
-                _vm.AddFileToImportList();
+                _vm.AddFileToImportList(isFoil);
 
 
         }
@@ -153,8 +154,8 @@ namespace MTG_Scanner
         {
             var fileDialog = new SaveFileDialog
             {
-                Filter = @"Text files (*.txt)|*.txt",
-                DefaultExt = "*.txt",
+                Filter = @"Comma Delimited Files (*.csv)|*.csv",
+                DefaultExt = "*.csv",
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
             };
             ;

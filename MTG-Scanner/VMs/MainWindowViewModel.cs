@@ -93,11 +93,11 @@ namespace MTG_Scanner.VMs
             return Util.ConvertBitmapInMemory(cameraBitmap);
         }
 
-        public MagicCard ComparePHash(MagicCard card)
+        public void ComparePHash(MagicCard card)
         {
             var tmpCard = Util.ComparePHash(card);
-            MatchedCard = tmpCard;
-            return tmpCard;
+            if (tmpCard != null)
+                MatchedCard = tmpCard;
         }
 
         public string SavePHashes(string selectedPath, ProgressDialogController dialogController)
@@ -116,8 +116,11 @@ namespace MTG_Scanner.VMs
             }
         }
 
-        public void AddFileToImportList()
+        public void AddFileToImportList(bool isFoil)
         {
+            if (isFoil)
+                MatchedCard.IsFoil = true;
+
             CardImportFileCreator.ListOfMatchedCards.Add(MatchedCard);
         }
     }

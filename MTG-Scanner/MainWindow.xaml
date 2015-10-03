@@ -121,7 +121,11 @@
                 <TextBlock Name="CardMatched" FontSize="15" Text="{Binding MatchedCard.Name}" Foreground="{DynamicResource BlackColorBrush}" TextAlignment="Center"></TextBlock>
             </StackPanel>
 
-            <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Content="Add Card To List or just press space" Click="AddCardToCardImportFile"></Button>
+            <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Content="Add Card To List or just press space (+CTRL for foil)" FontSize="15" Click="AddCardToCardImportFile"></Button>
+            <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <TextBlock Text="Check If Foiled" FontSize="15" Foreground="{DynamicResource BlackColorBrush}" Width="125"></TextBlock>
+                <CheckBox Name="IsFoilCheck" Foreground="{DynamicResource BlackColorBrush}"></CheckBox>
+            </StackPanel>
         </Grid>
     </controls:MetroContentControl>
 
