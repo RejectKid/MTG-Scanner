@@ -98,7 +98,7 @@
             <Menu Grid.Row="0" Margin="5" VerticalAlignment="Stretch" HorizontalAlignment="Left">
                 <MenuItem Name="NewCardImportButton" Header="New Card Import" Click="StartCardImportFile"></MenuItem>
                 <MenuItem Name="EndCardImportButton" Visibility="Collapsed" Header="End Card Import" Click="EndCardImportFile"></MenuItem>
-                <MenuItem Name="ComputePHashes" Header="Generate pHashes" Click="ComputePHashes_OnClick"></MenuItem>
+                <MenuItem Name="ComputePHashes" Header="Generate pHashes" Click="ComputePHashes_OnClick" Visibility="Collapsed"></MenuItem>
             </Menu>
             <!--cupcake do stuff here with webcam-->
             <StackPanel Grid.Row="1" Grid.Column ="0" MaxWidth="533" MaxHeight="400" HorizontalAlignment="Left">
