@@ -17,13 +17,18 @@ namespace MTG_Scanner.Models.Impl
 
                 foreach (var distinctCountCard in ListOfMatchedCards)
                 {
-                    fileStream.WriteLine(distinctCountCard.Name + ", " +
-                                              distinctCountCard.Set + ", " +
-                                              1 + ", " +
-                                              distinctCountCard.IsFoil);
+                    fileStream.WriteLine(SurroundWithQuotes(distinctCountCard.Name) + ", " +
+                                         SurroundWithQuotes(distinctCountCard.Set) + ", " +
+                                         SurroundWithQuotes(1.ToString()) + ", " +
+                                         SurroundWithQuotes(distinctCountCard.IsFoil.ToString()));
                 }
                 fileStream.Close();
             }
+        }
+
+        private static string SurroundWithQuotes(string name)
+        {
+            return "\"" + name + "\"";
         }
     }
 }
